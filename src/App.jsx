@@ -161,3 +161,72 @@ if (!session || !profile) {
     { id: "health", label: "Health", icon: Heart },
     { id: "profile", label: "Profile", icon: User },
   ];
+return (
+    <div style={{ background: COLORS.bg, fontFamily: "Figtree, sans-serif", color: COLORS.ink }} className="min-h-screen pb-24">
+      <div style={{ background: COLORS.forest }} className="text-white px-5 py-4 flex items-center justify-between sticky top-0 z-20">
+        <div className="flex items-center gap-2">
+          <span className="text-xl">🌿</span>
+          <span style={{ fontFamily: "Fraunces, serif" }} className="text-lg font-semibold">Bloom &amp; Burrow</span>
+        </div>
+        <button onClick={() => setTab("profile")} className="text-sm opacity-90 flex items-center gap-1">
+          <User size={14} /> {profile.username}
+        </button>
+      </div>
+
+      <div className="max-w-2xl mx-auto px-5 pt-6">
+        {tab === "home" && (
+          <HomeTab babyStage={babyStage} setBabyStage={setBabyStage} milestones={milestones} toggleMilestone={toggleMilestone}
+            doneMilestones={doneMilestones} totalMilestones={totalMilestones} activity={activity.slice(0, 6)} />
+        )}
+        {tab === "registry" && !registryOpen && <RegistryList onOpen={(id) => { setRegistryOpen(id); setRegistryLevel("new"); }} />}
+        {tab === "registry" && registryOpen && (
+          <RegistryDetail categoryId={registryOpen} level={registryLevel} setLevel={setRegistryLevel}
+            onBack={() => setRegistryOpen(null)} usedListings={registryUsed}
+            onOpenPost={() => { setNewListing((n) => ({ ...n, category: registryOpen })); setShowPost(true); }}
+            onMarkPurchased={markPurchased} />
+        )}
+        {tab === "market" && (
+          <MarketTab filtered={marketListings} filter={marketFilter} setFilter={setMarketFilter}
+            onPost={() => { setNewListing((n) => ({ ...n, category: marketFilter === "all" ? "sleep" : marketFilter })); setShowPost(true); }}
+            onRemove={removeListing} onSold={markSold} userId={session.user.id} loaded={listingsLoaded}
+            radiusMiles={radiusMiles} setRadiusMiles={setRadiusMiles} myLoc={myLoc} locStatus={locStatus} useMyLocation={useMyLocation} />
+        )}
+        {tab === "organic" && <OrganicTab />}
+        {tab === "health" && (
+          <div>
+            <div className="flex gap-2 mb-4">
+              {[{ id: "vitals", label: "Vitals log" }, { id: "care", label: "Find care near you" }].map((s) => (
+                <button key={s.id} onClick={() => setHealthSubTab(s.id)}
+                  style={{ background: healthSubTab === s.id ? COLORS.forest : COLORS.surface, color: healthSubTab === s.id ? "white" : COLORS.ink, borderColor: COLORS.line }}
+                  className="text-xs px-3 py-2 rounded-xl border flex-1">{s.label}</button>
+              ))}
+            </div>
+            {healthSubTab === "vitals" ? (
+              <HeartTab hrInput={hrInput} setHrInput={setHrInput} addHeartLog={addHeartLog} heartLogs={heartLogs} />
+            ) : (
+              <CareTab myLoc={myLoc} locStatus={locStatus} useMyLocation={useMyLocation} />
+            )}
+          </div>
+        )}
+        {tab === "profile" && <ProfileTab profile={profile} onSignOut={signOut} myActivity={myActivity} />}
+      </div>
+
+      {showPost && <PostModal newListing={newListing} setNewListing={setNewListing} onSubmit={submitListing} onClose={() => setShowPost(false)} myLoc={myLoc} />}
+
+      <div style={{ background: COLORS.surface, borderColor: COLORS.line }} className="fixed bottom-0 left-0 right-0 border-t px-1 py-2 flex justify-around z-20">
+        {NAV.map((n) => {
+          const Icon = n.icon;
+          const active = tab === n.id;
+          return (
+            <button key={n.id} onClick={() => { setTab(n.id); if (n.id !== "registry") setRegistryOpen(null); }}
+              className="flex flex-col items-center gap-0.5 px-1.5 py-1 rounded-lg transition"
+              style={{ color: active ? COLORS.forest : "#9AA39A" }}>
+              <Icon size={19} strokeWidth={active ? 2.4 : 1.8} />
+              <span className="text-[9.5px] font-medium">{n.label}</span>
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+      }
