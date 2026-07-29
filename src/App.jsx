@@ -111,3 +111,53 @@ function SectionLabel({ eyebrow, title }) {
     </div>
   );
 }
+if (!session || !profile) {
+    return (
+      <div style={{ background: COLORS.bg, fontFamily: "Figtree, sans-serif" }} className="min-h-screen flex items-center justify-center p-6">
+        <div style={{ background: COLORS.surface, borderColor: COLORS.line }} className="w-full max-w-sm rounded-2xl border p-8 shadow-sm">
+          <div className="text-center mb-6">
+            <div className="text-4xl mb-3">🌿</div>
+            <h1 style={{ color: COLORS.forest, fontFamily: "Fraunces, serif" }} className="text-3xl font-semibold mb-1">Bloom &amp; Burrow</h1>
+            <p style={{ color: COLORS.mauve }} className="text-sm">A gentler way to track, register, and pass things on.</p>
+          </div>
+          <div className="flex mb-4 rounded-xl overflow-hidden border" style={{ borderColor: COLORS.line }}>
+            {["login", "signup"].map((m) => (
+              <button key={m} onClick={() => { setAuthMode(m); setAuthError(""); }}
+                style={{ background: authMode === m ? COLORS.forest : "transparent", color: authMode === m ? "white" : COLORS.ink }}
+                className="flex-1 py-2 text-sm font-medium capitalize">{m === "login" ? "Log in" : "Sign up"}</button>
+            ))}
+          </div>
+          <div className="space-y-3">
+            {authMode === "signup" && (
+              <input placeholder="Username (shown to others)" value={authForm.username}
+                onChange={(e) => setAuthForm({ ...authForm, username: e.target.value })}
+                style={{ borderColor: COLORS.line }} className="w-full border rounded-xl px-4 py-2.5 outline-none" />
+            )}
+            <input placeholder="Email" type="email" value={authForm.email}
+              onChange={(e) => setAuthForm({ ...authForm, email: e.target.value })}
+              style={{ borderColor: COLORS.line }} className="w-full border rounded-xl px-4 py-2.5 outline-none" />
+            <input type="password" placeholder="Password" value={authForm.password}
+              onChange={(e) => setAuthForm({ ...authForm, password: e.target.value })}
+              style={{ borderColor: COLORS.line }} className="w-full border rounded-xl px-4 py-2.5 outline-none"
+              onKeyDown={(e) => e.key === "Enter" && handleAuth()} />
+            {authError && <p className="text-xs" style={{ color: "#B3454F" }}>{authError}</p>}
+            <button onClick={handleAuth} style={{ background: COLORS.forest }} className="w-full text-white rounded-xl py-2.5 font-medium hover:opacity-90 transition">
+              {authMode === "login" ? "Log in" : "Create account"}
+            </button>
+          </div>
+          <p className="text-[11px] mt-4" style={{ color: "#9AA39A" }}>
+            Real accounts — passwords are handled by Supabase Auth (hashed, never stored in plain text).
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  const NAV = [
+    { id: "home", label: "Tracker", icon: Home },
+    { id: "registry", label: "Registry", icon: ClipboardList },
+    { id: "market", label: "Market", icon: ShoppingBag },
+    { id: "organic", label: "Low-Chem", icon: Sparkles },
+    { id: "health", label: "Health", icon: Heart },
+    { id: "profile", label: "Profile", icon: User },
+  ];
