@@ -254,3 +254,97 @@ function HomeTab({ babyStage, setBabyStage, milestones, toggleMilestone, doneMil
       </div>
 
       <div style={{ background: COL
+function RegistryList({ onOpen }) {
+  return (
+    <div>
+      <SectionLabel eyebrow="Registry" title="Tap what you need — kept simple" />
+      <div className="grid grid-cols-2 gap-3">
+        {CATEGORIES.map((c) => (
+          <button key={c.id} onClick={() => onOpen(c.id)} style={{ background: COLORS.surface, borderColor: COLORS.line }}
+            className="text-left rounded-2xl border p-4 hover:shadow-sm transition">
+            <div className="text-2xl mb-2">{c.icon}</div>
+            <div style={{ color: COLORS.forest }} className="font-semibold text-sm">{c.label}</div>
+            <div style={{ color: COLORS.mauve }} className="text-xs mt-0.5">{c.need}</div>
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function RegistryDetail({ categoryId, level, setLevel, onBack, usedListings, onOpenPost, onMarkPurchased }) {
+  const cat = CATEGORIES.find((c) => c.id === categoryId);
+  const items = REGISTRY_ITEMS[categoryId] || [];
+  const organicItems = items.filter((i) => i.tags.includes("organic") || i.tags.includes("low-chemical"));
+  const [purchased, setPurchased] = useState({});
+  const LEVELS = [
+    { id: "new", label: "New, from real stores" },
+    { id: "used", label: `Used, from this app (${usedListings.length})` },
+    { id: "organic", label: "Low-chemical / sensitive skin" },
+  ];
+  return (
+    <div>
+      <button onClick={onBack} className="text-sm mb-3" style={{ color: COLORS.mauve }}>← All categories</button>
+      <SectionLabel eyebrow={cat?.label} title={cat?.need} />
+      <div className="flex gap-2 mb-4">
+        {LEVELS.map((l) => (
+          <button key={l.id} onClick={() => setLevel(l.id)}
+            style={{ background: level === l.id ? COLORS.forest : COLORS.surface, color: level === l.id ? "white" : COLORS.ink, borderColor: COLORS.line }}
+            className="text-xs px-3 py-2 rounded-xl border flex-1">{l.label}</button>
+        ))}
+      </div>
+      {level === "new" && (
+        <div className="space-y-3">
+          {items.map((it, i) => {
+            const key = i + it.name;
+            const bought = purchased[key];
+            return (
+              <div key={i} style={{ background: COLORS.surface, borderColor: COLORS.line }} className="rounded-xl border p-4">
+                <div className="flex items-center justify-between">
+                  <a href={it.url} target="_blank" rel="noopener noreferrer" className="flex-1">
+                    <div className="font-medium text-sm">{it.name}</div>
+                    <div className="text-xs mt-1" style={{ color: COLORS.mauve }}>{it.site}</div>
+                    <div className="flex gap-1 mt-1.5">{it.tags.map((t) => <Tag key={t} tone={t === "organic" ? "green" : "ochre"}>{t}</Tag>)}</div>
+                  </a>
+                  <ExternalLink size={16} style={{ color: COLORS.forest }} />
+                </div>
+                <button onClick={() => { setPurchased((p) => ({ ...p, [key]: !p[key] })); if (!bought) onMarkPurchased(it, cat?.label); }}
+                  style={{ background: bought ? "#DEE7DE" : "transparent", color: COLORS.forest, borderColor: COLORS.forest }}
+                  className="mt-2 text-xs px-3 py-1 rounded-full border flex items-center gap-1">
+                  <CheckCircle2 size={13} /> {bought ? "Marked purchased" : "Mark as purchased"}
+                </button>
+              </div>
+            );
+          })}
+        </div>
+      )}
+      {level === "used" && (
+        <div>
+          <button onClick={onOpenPost} style={{ background: COLORS.mauve }} className="text-white text-sm rounded-xl px-4 py-2 mb-3 flex items-center gap-1">
+            <Plus size={15} /> Post one you no longer need
+          </button>
+          <div className="space-y-3">
+            {usedListings.length === 0 && <p className="text-sm" style={{ color: COLORS.mauve }}>Nothing posted in this category yet — be the first.</p>}
+            {usedListings.map((l) => <ListingCard key={l.id} listing={l} />)}
+          </div>
+        </div>
+      )}
+      {level === "organic" && (
+        <div className="space-y-3">
+          <p className="text-xs mb-2" style={{ color: COLORS.mauve }}>Filtered to lower-chemical, organic-leaning picks for sensitive skin.</p>
+          {organicItems.map((it, i) => (
+            <a key={i} href={it.url} target="_blank" rel="noopener noreferrer" style={{ background: "#EEF2E9", borderColor: "#CFE0CC" }}
+              className="flex items-center justify-between rounded-xl border p-4 hover:shadow-sm transition">
+              <div>
+                <div className="font-medium text-sm">{it.name}</div>
+                <div className="text-xs mt-1" style={{ color: COLORS.forest }}>{it.site}</div>
+                <div className="flex gap-1 mt-1.5">{it.tags.map((t) => <Tag key={t} tone="green">{t}</Tag>)}</div>
+              </div>
+              <ExternalLink size={16} style={{ color: COLORS.forest }} />
+            </a>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
