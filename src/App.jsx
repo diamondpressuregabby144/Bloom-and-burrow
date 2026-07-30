@@ -488,4 +488,31 @@ function CareTab({ myLoc, locStatus, useMyLocation }) {
       </div>
     </div>
   );
-                    }
+                    }function ProfileTab({ profile, onSignOut, myActivity }) {
+  return (
+    <div>
+      <SectionLabel eyebrow="Your account" title={profile.username} />
+      <div style={{ background: COLORS.surface, borderColor: COLORS.line }} className="rounded-2xl border p-5 mb-5">
+        <div className="flex items-center gap-3 mb-3">
+          <div style={{ background: COLORS.forest }} className="w-12 h-12 rounded-full flex items-center justify-center text-white text-lg font-semibold">
+            {profile.username[0]?.toUpperCase()}
+          </div>
+          <div>
+            <div className="font-medium">{profile.username}</div>
+            <div className="text-xs flex items-center gap-1" style={{ color: COLORS.mauve }}>
+              <Clock size={11} /> Member since {new Date(profile.joined_at).toLocaleDateString()}
+            </div>
+          </div>
+        </div>
+        <button onClick={onSignOut} style={{ borderColor: COLORS.line, color: COLORS.mauve }} className="text-sm border rounded-xl px-4 py-2 flex items-center gap-1.5">
+          <LogOut size={14} /> Sign out
+        </button>
+      </div>
+      <SectionLabel eyebrow="Your timeline" title="Registry & marketplace activity" />
+      <div className="space-y-2">
+        {myActivity.length === 0 && <p className="text-sm" style={{ color: COLORS.mauve }}>Nothing logged yet.</p>}
+        {myActivity.map((a) => <ActivityRow key={a.id} a={a} />)}
+      </div>
+    </div>
+  );
+      }
