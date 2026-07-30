@@ -230,3 +230,27 @@ return (
     </div>
   );
       }
+function HomeTab({ babyStage, setBabyStage, milestones, toggleMilestone, doneMilestones, totalMilestones, activity }) {
+  const pct = Math.round((doneMilestones / totalMilestones) * 100);
+  return (
+    <div className="space-y-6">
+      <div style={{ background: COLORS.surface, borderColor: COLORS.line }} className="rounded-2xl border p-5">
+        <div className="flex items-center justify-between mb-3">
+          <SectionLabel eyebrow={babyStage.mode === "pregnant" ? "Pregnancy" : "Baby age"} title={babyStage.mode === "pregnant" ? `Week ${babyStage.week}` : `${babyStage.week} months`} />
+          <div className="flex gap-1">
+            <button onClick={() => setBabyStage((s) => ({ ...s, mode: "pregnant", week: 24 }))}
+              style={{ background: babyStage.mode === "pregnant" ? COLORS.forest : "transparent", color: babyStage.mode === "pregnant" ? "white" : COLORS.forest, borderColor: COLORS.forest }}
+              className="text-xs px-3 py-1 rounded-full border">Pregnant</button>
+            <button onClick={() => setBabyStage((s) => ({ ...s, mode: "baby", week: 2 }))}
+              style={{ background: babyStage.mode === "baby" ? COLORS.forest : "transparent", color: babyStage.mode === "baby" ? "white" : COLORS.forest, borderColor: COLORS.forest }}
+              className="text-xs px-3 py-1 rounded-full border">Baby's here</button>
+          </div>
+        </div>
+        <input type="range" min={babyStage.mode === "pregnant" ? 1 : 0} max={babyStage.mode === "pregnant" ? 40 : 24}
+          value={babyStage.week} onChange={(e) => setBabyStage((s) => ({ ...s, week: Number(e.target.value) }))} className="w-full accent-[#2F4538]" />
+        <p className="text-sm mt-2" style={{ color: COLORS.mauve }}>
+          {babyStage.mode === "pregnant" ? "Drag to log how far along you are." : "Drag to log baby's age in months."}
+        </p>
+      </div>
+
+      <div style={{ background: COL
