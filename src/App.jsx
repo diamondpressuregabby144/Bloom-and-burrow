@@ -383,3 +383,12 @@ function MarketTab({ filtered, filter, setFilter, onPost, onRemove, onSold, user
     <div>
       <SectionLabel eyebrow="In-app marketplace" title="Used baby gear, posted by parents here" />
       <div style={{ background: COLORS.surface, borderColor: COLORS.line }} className="rounded-xl border p-4 mb-4">
+function OrganicTab() {
+  const [q, setQ] = useState("");
+  const all = Object.entries(REGISTRY_ITEMS).flatMap(([catId, items]) =>
+    items.filter((i) => i.tags.includes("organic") || i.tags.includes("low-chemical")).map((i) => ({ ...i, catId }))
+  );
+  const filtered = all.filter((i) => i.name.toLowerCase().includes(q.toLowerCase()) || i.site.toLowerCase().includes(q.toLowerCase()));
+  return (
+    <div>
+      <SectionLabel eyebrow="For sensitive skin" title="One list, no endless s
