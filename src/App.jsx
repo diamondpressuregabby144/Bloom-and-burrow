@@ -549,10 +549,8 @@ function RegistryDetail({ categoryId, level, setLevel, onBack, usedListings, onO
       {level === "organic" && (
         <div className="space-y-3">
           <p className="text-xs mb-2" style={{ color: COLORS.mauve }}>Filtered to lower-chemical, organic-leaning picks for sensitive skin.</p>
-          {organicItems.map((it, i) => (
-            <a key={i} href={it.url} target="_blank" rel="noopener noreferrer" style={{ background: "#EEF2E9", borderColor: "#CFE0CC" }}
-              className="flex items-center justify-between rounded-xl border p-4 hover:shadow
-}{organicItems.map((it, i) => (
+          
+{organicItems.map((it, i) => (
             <a key={i} href={it.url} target="_blank" rel="noopener noreferrer" style={{ background: "#EEF2E9", borderColor: "#CFE0CC" }}
               className="flex items-center justify-between rounded-xl border p-4 hover:shadow-sm transition">
               <div>
