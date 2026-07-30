@@ -1,0 +1,9 @@
+{
+  "name": "Bloom & Burrow",
+  "short_name": "Bloom & Burrow",
+  "description": "Maternity & baby-needs tracker, registry, and marketplace",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#F4F1E6",
+  "theme_color": "#2F4538"
+}
