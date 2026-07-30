@@ -400,247 +400,156 @@ export default function App() {
         })}
       </div>
     </div>
-  );
-}className="flex items-center justify-between rounded-xl border p-4 hover:shadow-sm transition">
-              <div>
-                <div className="font-medium text-sm">{it.name}</div>
-                <div className="text-xs mt-1" style={{ color: COLORS.forest }}>{it.site}</div>
-                <div className="flex gap-1 mt-1.5">{it.tags.map((t) => <Tag key={t} tone="green">{t}</Tag>)}</div>
+  );} function HomeTab({ babyStage, setBabyStage, milestones, toggleMilestone, doneMilestones, totalMilestones, activity }) {
+  const pct = Math.round((doneMilestones / totalMilestones) * 100);
+  return (
+    <div className="space-y-6">
+      <div style={{ background: COLORS.surface, borderColor: COLORS.line }} className="rounded-2xl border p-5">
+        <div className="flex items-center justify-between mb-3">
+          <SectionLabel eyebrow={babyStage.mode === "pregnant" ? "Pregnancy" : "Baby age"} title={babyStage.mode === "pregnant" ? `Week ${babyStage.week}` : `${babyStage.week} months`} />
+          <div className="flex gap-1">
+            <button onClick={() => setBabyStage((s) => ({ ...s, mode: "pregnant", week: 24 }))}
+              style={{ background: babyStage.mode === "pregnant" ? COLORS.forest : "transparent", color: babyStage.mode === "pregnant" ? "white" : COLORS.forest, borderColor: COLORS.forest }}
+              className="text-xs px-3 py-1 rounded-full border">Pregnant</button>
+            <button onClick={() => setBabyStage((s) => ({ ...s, mode: "baby", week: 2 }))}
+              style={{ background: babyStage.mode === "baby" ? COLORS.forest : "transparent", color: babyStage.mode === "baby" ? "white" : COLORS.forest, borderColor: COLORS.forest }}
+              className="text-xs px-3 py-1 rounded-full border">Baby's here</button>
+          </div>
+        </div>
+        <input type="range" min={babyStage.mode === "pregnant" ? 1 : 0} max={babyStage.mode === "pregnant" ? 40 : 24}
+          value={babyStage.week} onChange={(e) => setBabyStage((s) => ({ ...s, week: Number(e.target.value) }))} className="w-full accent-[#2F4538]" />
+        <p className="text-sm mt-2" style={{ color: COLORS.mauve }}>
+          {babyStage.mode === "pregnant" ? "Drag to log how far along you are." : "Drag to log baby's age in months."}
+        </p>
+      </div>
+
+      <div style={{ background: COLORS.surface, borderColor: COLORS.line }} className="rounded-2xl border p-5">
+        <div className="flex items-center justify-between mb-4">
+          <SectionLabel eyebrow="Milestone tracker" title="8 categories, all in one place" />
+          <span style={{ fontFamily: "'IBM Plex Mono', monospace", color: COLORS.forest }} className="text-sm">{pct}%</span>
+        </div>
+        <div className="space-y-4">
+          {MILESTONE_GROUPS.map((g) => (
+            <div key={g.id}>
+              <div style={{ color: COLORS.forest }} className="text-sm font-semibold mb-1.5">{g.label}</div>
+              <div className="flex flex-wrap gap-2">
+                {g.items.map((item) => {
+                  const key = `${g.id}::${item}`;
+                  const on = !!milestones[key];
+                  return (
+                    <button key={key} onClick={() => toggleMilestone(g.id, item)}
+                      style={{ background: on ? COLORS.forest : "#F7F5EE", color: on ? "white" : COLORS.ink, borderColor: on ? COLORS.forest : COLORS.line }}
+                      className="text-xs px-3 py-1.5 rounded-full border transition">{item}</button>
+                  );
+                })}
               </div>
-              <ExternalLink size={16} style={{ color: COLORS.forest }} />
-            </a>
+            </div>
           ))}
+        </div>
+      </div>
+
+      {activity.length > 0 && (
+        <div style={{ background: COLORS.surface, borderColor: COLORS.line }} className="rounded-2xl border p-5">
+          <SectionLabel eyebrow="Community feed" title="Recent activity" />
+          <div className="space-y-2">{activity.map((a) => <ActivityRow key={a.id} a={a} />)}</div>
         </div>
       )}
     </div>
   );
 }
 
-function ListingCard({ listing, onRemove, onSold, userId }) {
-  const cat = CATEGORIES.find((c) => c.id === listing.category);
-  const mine = userId === listing.poster_id;
+function ActivityRow({ a }) {
+  const icon = a.kind === "purchased" ? <CheckCircle2 size={14} /> : a.kind === "sold" ? <ShoppingBag size={14} /> : <Plus size={14} />;
   return (
-    <div style={{ background: COLORS.surface, borderColor: COLORS.line, opacity: listing.sold ? 0.55 : 1 }} className="rounded-xl border p-4">
-      <div className="flex justify-between items-start">
-        <div className="flex-1">
-          <div className="font-medium text-sm">{listing.title} {listing.sold && <Tag tone="mauve">Sold</Tag>}</div>
-          <div className="text-xs mt-1 flex flex-wrap items-center gap-x-2" style={{ color: COLORS.mauve }}>
-            <span>{cat?.icon} {cat?.label}</span>
-            <span>· posted by {listing.poster_name}</span>
-            {listing.city && <span className="flex items-center gap-0.5"><MapPin size={11} />{listing.city}</span>}
-            {listing.distance != null && <span>· {listing.distance.toFixed(1)} mi away</span>}
-          </div>
-          {listing.note && <div className="text-xs mt-1.5">{listing.note}</div>}
-          <div className="flex gap-1.5 mt-2">
-            <Tag tone="mauve">{listing.condition}</Tag>
-            {listing.price > 0 ? <Tag tone="ochre">${listing.price}</Tag> : <Tag tone="green">Free</Tag>}
-            <Tag tone="green">Local pickup</Tag>
-          </div>
-          {mine && !listing.sold && onSold && (
-            <button onClick={() => onSold(listing)} className="text-xs mt-2 underline" style={{ color: COLORS.forest }}>Mark as sold</button>
-          )}
-        </div>
-        {onRemove && mine && <button onClick={() => onRemove(listing.id)} className="p-1" style={{ color: COLORS.mauve }}><Trash2 size={15} /></button>}
+    <div className="flex items-start gap-2 text-sm">
+      <span style={{ color: COLORS.ochre }} className="mt-0.5">{icon}</span>
+      <div>
+        <span className="font-medium">{a.username}</span> <span>{a.text}</span>
+        <div className="text-[11px]" style={{ color: "#9AA39A" }}>{timeAgo(a.created_at)}</div>
       </div>
     </div>
   );
 }
 
-function MarketTab({ filtered, filter, setFilter, onPost, onRemove, onSold, userId, loaded, radiusMiles, setRadiusMiles, myLoc, locStatus, useMyLocation }) {
+function RegistryList({ onOpen }) {
   return (
     <div>
-      <SectionLabel eyebrow="In-app marketplace" title="Used baby gear, posted by parents here" />
-      <div style={{ background: COLORS.surface, borderColor: COLORS.line }} className="rounded-xl border p-4 mb-4">
-        <div className="flex items-center justify-between mb-2">
-          <div className="text-sm font-medium flex items-center gap-1.5"><Navigation size={14} style={{ color: COLORS.forest }} /> Search near me</div>
-          <button onClick={useMyLocation} style={{ color: COLORS.forest }} className="text-xs underline">{myLoc ? "Refresh location" : "Share my location"}</button>
-        </div>
-        {myLoc && (
-          <div>
-            <div className="flex justify-between text-xs mb-1" style={{ color: COLORS.mauve }}><span>Radius</span><span>{radiusMiles} mi</span></div>
-            <input type="range" min={5} max={100} step={5} value={radiusMiles} onChange={(e) => setRadiusMiles(Number(e.target.value))} className="w-full accent-[#2F4538]" />
-          </div>
-        )}
-      </div>
-      <div className="flex gap-2 overflow-x-auto pb-2 mb-3">
-        <button onClick={() => setFilter("all")}
-          style={{ background: filter === "all" ? COLORS.forest : COLORS.surface, color: filter === "all" ? "white" : COLORS.ink, borderColor: COLORS.line }}
-          className="text-xs px-3 py-1.5 rounded-full border whitespace-nowrap">All</button>
+      <SectionLabel eyebrow="Registry" title="Tap what you need — kept simple" />
+      <div className="grid grid-cols-2 gap-3">
         {CATEGORIES.map((c) => (
-          <button key={c.id} onClick={() => setFilter(c.id)}
-            style={{ background: filter === c.id ? COLORS.forest : COLORS.surface, color: filter === c.id ? "white" : COLORS.ink, borderColor: COLORS.line }}
-            className="text-xs px-3 py-1.5 rounded-full border whitespace-nowrap">{c.icon} {c.label}</button>
+          <button key={c.id} onClick={() => onOpen(c.id)} style={{ background: COLORS.surface, borderColor: COLORS.line }}
+            className="text-left rounded-2xl border p-4 hover:shadow-sm transition">
+            <div className="text-2xl mb-2">{c.icon}</div>
+            <div style={{ color: COLORS.forest }} className="font-semibold text-sm">{c.label}</div>
+            <div style={{ color: COLORS.mauve }} className="text-xs mt-0.5">{c.need}</div>
+          </button>
         ))}
-      </div>
-      <button onClick={onPost} style={{ background: COLORS.mauve }} className="text-white text-sm rounded-xl px-4 py-2 mb-4 flex items-center gap-1">
-        <Plus size={15} /> Post something you no longer need
-      </button>
-      <div className="space-y-3">
-        {!loaded && <p className="text-sm" style={{ color: COLORS.mauve }}>Loading listings…</p>}
-        {loaded && filtered.length === 0 && <p className="text-sm" style={{ color: COLORS.mauve }}>Nothing in range — try a wider radius.</p>}
-        {filtered.map((l) => <ListingCard key={l.id} listing={l} onRemove={onRemove} onSold={onSold} userId={userId} />)}
       </div>
     </div>
   );
 }
 
-function PostModal({ newListing, setNewListing, onSubmit, onClose, myLoc }) {
+function RegistryDetail({ categoryId, level, setLevel, onBack, usedListings, onOpenPost, onMarkPurchased }) {
+  const cat = CATEGORIES.find((c) => c.id === categoryId);
+  const items = REGISTRY_ITEMS[categoryId] || [];
+  const organicItems = items.filter((i) => i.tags.includes("organic") || i.tags.includes("low-chemical"));
+  const [purchased, setPurchased] = useState({});
+  const LEVELS = [
+    { id: "new", label: "New, from real stores" },
+    { id: "used", label: `Used, from this app (${usedListings.length})` },
+    { id: "organic", label: "Low-chemical / sensitive skin" },
+  ];
   return (
-    <div className="fixed inset-0 bg-black/30 flex items-end sm:items-center justify-center z-30 p-4">
-      <div style={{ background: COLORS.surface }} className="rounded-2xl w-full max-w-md p-5 max-h-[85vh] overflow-y-auto">
-        <div className="flex justify-between items-center mb-4">
-          <h3 style={{ fontFamily: "Fraunces, serif", color: COLORS.forest }} className="text-xl font-semibold">List an item</h3>
-          <button onClick={onClose}><X size={20} /></button>
-        </div>
+    <div>
+      <button onClick={onBack} className="text-sm mb-3" style={{ color: COLORS.mauve }}>← All categories</button>
+      <SectionLabel eyebrow={cat?.label} title={cat?.need} />
+      <div className="flex gap-2 mb-4">
+        {LEVELS.map((l) => (
+          <button key={l.id} onClick={() => setLevel(l.id)}
+            style={{ background: level === l.id ? COLORS.forest : COLORS.surface, color: level === l.id ? "white" : COLORS.ink, borderColor: COLORS.line }}
+            className="text-xs px-3 py-2 rounded-xl border flex-1">{l.label}</button>
+        ))}
+      </div>
+      {level === "new" && (
         <div className="space-y-3">
-          <input placeholder="What is it?" value={newListing.title} onChange={(e) => setNewListing({ ...newListing, title: e.target.value })}
-            style={{ borderColor: COLORS.line }} className="w-full border rounded-xl px-3 py-2 text-sm outline-none" />
-          <select value={newListing.category} onChange={(e) => setNewListing({ ...newListing, category: e.target.value })}
-            style={{ borderColor: COLORS.line }} className="w-full border rounded-xl px-3 py-2 text-sm outline-none">
-            {CATEGORIES.map((c) => <option key={c.id} value={c.id}>{c.icon} {c.label}</option>)}
-          </select>
-          <input placeholder="City/neighborhood for pickup" value={newListing.city} onChange={(e) => setNewListing({ ...newListing, city: e.target.value })}
-            style={{ borderColor: COLORS.line }} className="w-full border rounded-xl px-3 py-2 text-sm outline-none" />
-          <div className="flex gap-2">
-            <input placeholder="Price ($ — 0 for free)" type="number" value={newListing.price} onChange={(e) => setNewListing({ ...newListing, price: e.target.value })}
-              style={{ borderColor: COLORS.line }} className="w-1/2 border rounded-xl px-3 py-2 text-sm outline-none" />
-            <select value={newListing.condition} onChange={(e) => setNewListing({ ...newListing, condition: e.target.value })}
-              style={{ borderColor: COLORS.line }} className="w-1/2 border rounded-xl px-3 py-2 text-sm outline-none">
-              <option>New/unopened</option><option>Gently used</option><option>Good</option><option>Well loved</option>
-            </select>
-          </div>
-          <textarea placeholder="Notes" value={newListing.note} onChange={(e) => setNewListing({ ...newListing, note: e.target.value })}
-            style={{ borderColor: COLORS.line }} className="w-full border rounded-xl px-3 py-2 text-sm outline-none" rows={3} />
-          <button onClick={onSubmit} style={{ background: COLORS.forest }} className="w-full text-white rounded-xl py-2.5 font-medium">Post to marketplace</button>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function OrganicTab() {
-  const [q, setQ] = useState("");
-  const all = Object.entries(REGISTRY_ITEMS).flatMap(([catId, items]) =>
-    items.filter((i) => i.tags.includes("organic") || i.tags.includes("low-chemical")).map((i) => ({ ...i, catId }))
-  );
-  const filtered = all.filter((i) => i.name.toLowerCase().includes(q.toLowerCase()) || i.site.toLowerCase().includes(q.toLowerCase()));
-  return (
-    <div>
-      <SectionLabel eyebrow="For sensitive skin" title="One list, no endless scrolling" />
-      <div className="relative mb-4">
-        <Search size={16} className="absolute left-3 top-3" style={{ color: COLORS.mauve }} />
-        <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search diapers, clothes, food…"
-          style={{ borderColor: COLORS.line }} className="w-full border rounded-xl pl-9 pr-3 py-2.5 text-sm outline-none" />
-      </div>
-      <div className="space-y-3">
-        {filtered.map((it, i) => {
-          const cat = CATEGORIES.find((c) => c.id === it.catId);
-          return (
-            <a key={i} href={it.url} target="_blank" rel="noopener noreferrer" style={{ background: "#EEF2E9", borderColor: "#CFE0CC" }}
-              className="flex items-center justify-between rounded-xl border p-4 hover:shadow-sm transition">
-              <div>
-                <div className="text-xs mb-1" style={{ color: COLORS.mauve }}>{cat?.icon} {cat?.label}</div>
-                <div className="font-medium text-sm">{it.name}</div>
-                <div className="text-xs mt-1" style={{ color: COLORS.forest }}>{it.site}</div>
-                <div className="flex gap-1 mt-1.5">{it.tags.map((t) => <Tag key={t} tone="green">{t}</Tag>)}</div>
+          {items.map((it, i) => {
+            const key = i + it.name;
+            const bought = purchased[key];
+            return (
+              <div key={i} style={{ background: COLORS.surface, borderColor: COLORS.line }} className="rounded-xl border p-4">
+                <div className="flex items-center justify-between">
+                  <a href={it.url} target="_blank" rel="noopener noreferrer" className="flex-1">
+                    <div className="font-medium text-sm">{it.name}</div>
+                    <div className="text-xs mt-1" style={{ color: COLORS.mauve }}>{it.site}</div>
+                    <div className="flex gap-1 mt-1.5">{it.tags.map((t) => <Tag key={t} tone={t === "organic" ? "green" : "ochre"}>{t}</Tag>)}</div>
+                  </a>
+                  <ExternalLink size={16} style={{ color: COLORS.forest }} />
+                </div>
+                <button onClick={() => { setPurchased((p) => ({ ...p, [key]: !p[key] })); if (!bought) onMarkPurchased(it, cat?.label); }}
+                  style={{ background: bought ? "#DEE7DE" : "transparent", color: COLORS.forest, borderColor: COLORS.forest }}
+                  className="mt-2 text-xs px-3 py-1 rounded-full border flex items-center gap-1">
+                  <CheckCircle2 size={13} /> {bought ? "Marked purchased" : "Mark as purchased"}
+                </button>
               </div>
-              <ExternalLink size={16} style={{ color: COLORS.forest }} />
-            </a>
-          );
-        })}
-      </div>
-    </div>
-  );
-}
-
-function HeartTab({ hrInput, setHrInput, addHeartLog, heartLogs }) {
-  return (
-    <div>
-      <div style={{ background: "#FBEEEF", borderColor: "#F0D3D6" }} className="rounded-xl border p-4 mb-5 text-sm">
-        A phone screen or app can't safely or accurately measure a baby's real heartbeat. This tab only logs readings
-        from an actual pulse oximeter or pediatrician visit. For any concern about your baby's heart rate or breathing,
-        contact your pediatrician or emergency services rather than relying on an app.
-      </div>
-      <div style={{ background: COLORS.surface, borderColor: COLORS.line }} className="rounded-2xl border p-5 mb-4">
-        <div className="flex gap-2">
-          <input type="number" placeholder="BPM from your monitor" value={hrInput} onChange={(e) => setHrInput(e.target.value)}
-            style={{ borderColor: COLORS.line }} className="flex-1 border rounded-xl px-3 py-2 text-sm outline-none" />
-          <button onClick={addHeartLog} style={{ background: COLORS.forest }} className="text-white rounded-xl px-4 text-sm font-medium">Log</button>
+            );
+          })}
         </div>
-      </div>
-      <div className="space-y-2">
-        {heartLogs.length === 0 && <p className="text-sm" style={{ color: COLORS.mauve }}>No readings logged yet.</p>}
-        {heartLogs.map((l, i) => (
-          <div key={i} style={{ background: COLORS.surface, borderColor: COLORS.line }} className="flex justify-between rounded-xl border px-4 py-2.5 text-sm">
-            <span>{l.t}</span><span style={{ fontFamily: "'IBM Plex Mono', monospace", color: COLORS.forest }}>{l.bpm} bpm</span>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-function CareTab({ myLoc, locStatus, useMyLocation }) {
-  const withDistance = CARE_PROVIDERS.map((p) => ({ ...p, distance: myLoc ? haversineMiles(myLoc.lat, myLoc.lng, p.lat, p.lng) : null }))
-    .sort((a, b) => (a.distance ?? 9999) - (b.distance ?? 9999));
-  return (
-    <div>
-      <SectionLabel eyebrow="Directions & phone numbers" title="Pediatricians & children's hospitals" />
-      <div style={{ background: COLORS.surface, borderColor: COLORS.line }} className="rounded-xl border p-4 mb-4">
-        <div className="flex items-center justify-between">
-          <div className="text-sm font-medium flex items-center gap-1.5"><Navigation size={14} style={{ color: COLORS.forest }} /> Sort by distance from me</div>
-          <button onClick={useMyLocation} style={{ color: COLORS.forest }} className="text-xs underline">{myLoc ? "Refresh" : "Share location"}</button>
-        </div>
-        {!myLoc && <p className="text-xs mt-1" style={{ color: COLORS.mauve }}>Without location, results are ordered by rating instead.</p>}
-      </div>
-      <div className="space-y-3">
-        {withDistance.map((p, i) => (
-          <div key={i} style={{ background: COLORS.surface, borderColor: COLORS.line }} className="rounded-xl border p-4">
-            <Tag tone={p.type === "Pediatrician" ? "ochre" : "mauve"}>{p.type}</Tag>
-            <div className="font-medium text-sm mt-1.5">{p.name}</div>
-            <div className="text-xs mt-1 flex items-center gap-1" style={{ color: COLORS.mauve }}><MapPin size={11} />{p.address}</div>
-            <div className="flex items-center gap-3 mt-1.5 text-xs">
-              <span className="flex items-center gap-0.5" style={{ color: COLORS.ochre }}><Star size={12} fill="currentColor" />{p.rating} ({p.ratingCount})</span>
-              {p.distance != null && <span style={{ color: COLORS.forest }}>{p.distance.toFixed(1)} mi away</span>}
-            </div>
-            <div className="flex gap-2 mt-3">
-              <a href={mapsDirectionsUrl(p.address)} target="_blank" rel="noopener noreferrer" style={{ background: COLORS.forest }}
-                className="text-white text-xs px-3 py-1.5 rounded-full flex items-center gap-1"><Navigation size={12} /> Directions</a>
-              <a href={`tel:${p.phone.replace(/\s/g, "")}`} style={{ borderColor: COLORS.forest, color: COLORS.forest }}
-                className="text-xs px-3 py-1.5 rounded-full border flex items-center gap-1"><Phone size={12} /> {p.phone}</a>
-            </div>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-function ProfileTab({ profile, onSignOut, myActivity }) {
-  return (
-    <div>
-      <SectionLabel eyebrow="Your account" title={profile.username} />
-      <div style={{ background: COLORS.surface, borderColor: COLORS.line }} className="rounded-2xl border p-5 mb-5">
-        <div className="flex items-center gap-3 mb-3">
-          <div style={{ background: COLORS.forest }} className="w-12 h-12 rounded-full flex items-center justify-center text-white text-lg font-semibold">
-            {profile.username[0]?.toUpperCase()}
-          </div>
-          <div>
-            <div className="font-medium">{profile.username}</div>
-            <div className="text-xs flex items-center gap-1" style={{ color: COLORS.mauve }}>
-              <Clock size={11} /> Member since {new Date(profile.joined_at).toLocaleDateString()}
-            </div>
+      )}
+      {level === "used" && (
+        <div>
+          <button onClick={onOpenPost} style={{ background: COLORS.mauve }} className="text-white text-sm rounded-xl px-4 py-2 mb-3 flex items-center gap-1">
+            <Plus size={15} /> Post one you no longer need
+          </button>
+          <div className="space-y-3">
+            {usedListings.length === 0 && <p className="text-sm" style={{ color: COLORS.mauve }}>Nothing posted in this category yet — be the first.</p>}
+            {usedListings.map((l) => <ListingCard key={l.id} listing={l} />)}
           </div>
         </div>
-        <button onClick={onSignOut} style={{ borderColor: COLORS.line, color: COLORS.mauve }} className="text-sm border rounded-xl px-4 py-2 flex items-center gap-1.5">
-          <LogOut size={14} /> Sign out
-        </button>
-      </div>
-      <SectionLabel eyebrow="Your timeline" title="Registry & marketplace activity" />
-      <div className="space-y-2">
-        {myActivity.length === 0 && <p className="text-sm" style={{ color: COLORS.mauve }}>Nothing logged yet.</p>}
-        {myActivity.map((a) => <ActivityRow key={a.id} a={a} />)}
-      </div>
-    </div>
-  );
+      )}
+      {level === "organic" && (
+        <div className="space-y-3">
+          <p className="text-xs mb-2" style={{ color: COLORS.mauve }}>Filtered to lower-chemical, organic-leaning picks for sensitive skin.</p>
+          {organicItems.map((it, i) => (
+            <a key={i} href={it.url} target="_blank" rel="noopener noreferrer" style={{ background: "#EEF2E9", borderColor: "#CFE0CC" }}
+              className="flex items-center justify-between rounded-xl border p-4 hover:shadow
 }
