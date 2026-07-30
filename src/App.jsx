@@ -552,4 +552,245 @@ function RegistryDetail({ categoryId, level, setLevel, onBack, usedListings, onO
           {organicItems.map((it, i) => (
             <a key={i} href={it.url} target="_blank" rel="noopener noreferrer" style={{ background: "#EEF2E9", borderColor: "#CFE0CC" }}
               className="flex items-center justify-between rounded-xl border p-4 hover:shadow
+}{organicItems.map((it, i) => (
+            <a key={i} href={it.url} target="_blank" rel="noopener noreferrer" style={{ background: "#EEF2E9", borderColor: "#CFE0CC" }}
+              className="flex items-center justify-between rounded-xl border p-4 hover:shadow-sm transition">
+              <div>
+                <div className="font-medium text-sm">{it.name}</div>
+                <div className="text-xs mt-1" style={{ color: COLORS.forest }}>{it.site}</div>
+                <div className="flex gap-1 mt-1.5">{it.tags.map((t) => <Tag key={t} tone="green">{t}</Tag>)}</div>
+              </div>
+              <ExternalLink size={16} style={{ color: COLORS.forest }} />
+            </a>
+          ))}
+        </div>
+      )}
+    </div>
+  );
 }
+
+function ListingCard({ listing, onRemove, onSold, userId }) {
+  const cat = CATEGORIES.find((c) => c.id === listing.category);
+  const mine = userId === listing.poster_id;
+  return (
+    <div style={{ background: COLORS.surface, borderColor: COLORS.line, opacity: listing.sold ? 0.55 : 1 }} className="rounded-xl border p-4">
+      <div className="flex justify-between items-start">
+        <div className="flex-1">
+          <div className="font-medium text-sm">{listing.title} {listing.sold && <Tag tone="mauve">Sold</Tag>}</div>
+          <div className="text-xs mt-1 flex flex-wrap items-center gap-x-2" style={{ color: COLORS.mauve }}>
+            <span>{cat?.icon} {cat?.label}</span>
+            <span>· posted by {listing.poster_name}</span>
+            {listing.city && <span className="flex items-center gap-0.5"><MapPin size={11} />{listing.city}</span>}
+            {listing.distance != null && <span>· {listing.distance.toFixed(1)} mi away</span>}
+          </div>
+          {listing.note && <div className="text-xs mt-1.5">{listing.note}</div>}
+          <div className="flex gap-1.5 mt-2">
+            <Tag tone="mauve">{listing.condition}</Tag>
+            {listing.price > 0 ? <Tag tone="ochre">${listing.price}</Tag> : <Tag tone="green">Free</Tag>}
+            <Tag tone="green">Local pickup</Tag>
+          </div>
+          {mine && !listing.sold && onSold && (
+            <button onClick={() => onSold(listing)} className="text-xs mt-2 underline" style={{ color: COLORS.forest }}>Mark as sold</button>
+          )}
+        </div>
+        {onRemove && mine && <button onClick={() => onRemove(listing.id)} className="p-1" style={{ color: COLORS.mauve }}><Trash2 size={15} /></button>}
+      </div>
+    </div>
+  );
+}
+
+function MarketTab({ filtered, filter, setFilter, onPost, onRemove, onSold, userId, loaded, radiusMiles, setRadiusMiles, myLoc, locStatus, useMyLocation }) {
+  return (
+    <div>
+      <SectionLabel eyebrow="In-app marketplace" title="Used baby gear, posted by parents here" />
+      <div style={{ background: COLORS.surface, borderColor: COLORS.line }} className="rounded-xl border p-4 mb-4">
+        <div className="flex items-center justify-between mb-2">
+          <div className="text-sm font-medium flex items-center gap-1.5"><Navigation size={14} style={{ color: COLORS.forest }} /> Search near me</div>
+          <button onClick={useMyLocation} style={{ color: COLORS.forest }} className="text-xs underline">{myLoc ? "Refresh location" : "Share my location"}</button>
+        </div>
+        {myLoc && (<div>
+            <div className="flex justify-between text-xs mb-1" style={{ color: COLORS.mauve }}><span>Radius</span><span>{radiusMiles} mi</span></div>
+            <input type="range" min={5} max={100} step={5} value={radiusMiles} onChange={(e) => setRadiusMiles(Number(e.target.value))} className="w-full accent-[#2F4538]" />
+          </div>
+        )}
+      </div>
+      <div className="flex gap-2 overflow-x-auto pb-2 mb-3">
+        <button onClick={() => setFilter("all")}
+          style={{ background: filter === "all" ? COLORS.forest : COLORS.surface, color: filter === "all" ? "white" : COLORS.ink, borderColor: COLORS.line }}
+          className="text-xs px-3 py-1.5 rounded-full border whitespace-nowrap">All</button>
+        {CATEGORIES.map((c) => (
+          <button key={c.id} onClick={() => setFilter(c.id)}
+            style={{ background: filter === c.id ? COLORS.forest : COLORS.surface, color: filter === c.id ? "white" : COLORS.ink, borderColor: COLORS.line }}
+            className="text-xs px-3 py-1.5 rounded-full border whitespace-nowrap">{c.icon} {c.label}</button>
+        ))}
+      </div>
+      <button onClick={onPost} style={{ background: COLORS.mauve }} className="text-white text-sm rounded-xl px-4 py-2 mb-4 flex items-center gap-1">
+        <Plus size={15} /> Post something you no longer need
+      </button>
+      <div className="space-y-3">
+        {!loaded && <p className="text-sm" style={{ color: COLORS.mauve }}>Loading listings…</p>}
+        {loaded && filtered.length === 0 && <p className="text-sm" style={{ color: COLORS.mauve }}>Nothing in range — try a wider radius.</p>}
+        {filtered.map((l) => <ListingCard key={l.id} listing={l} onRemove={onRemove} onSold={onSold} userId={userId} />)}
+      </div>
+    </div>
+  );
+                                                   }
+      function PostModal({ newListing, setNewListing, onSubmit, onClose, myLoc }) {
+  return (
+    <div className="fixed inset-0 bg-black/30 flex items-end sm:items-center justify-center z-30 p-4">
+      <div style={{ background: COLORS.surface }} className="rounded-2xl w-full max-w-md p-5 max-h-[85vh] overflow-y-auto">
+        <div className="flex justify-between items-center mb-4">
+          <h3 style={{ fontFamily: "Fraunces, serif", color: COLORS.forest }} className="text-xl font-semibold">List an item</h3>
+          <button onClick={onClose}><X size={20} /></button>
+        </div>
+        <div className="space-y-3">
+          <input placeholder="What is it?" value={newListing.title} onChange={(e) => setNewListing({ ...newListing, title: e.target.value })}
+            style={{ borderColor: COLORS.line }} className="w-full border rounded-xl px-3 py-2 text-sm outline-none" />
+          <select value={newListing.category} onChange={(e) => setNewListing({ ...newListing, category: e.target.value })}
+            style={{ borderColor: COLORS.line }} className="w-full border rounded-xl px-3 py-2 text-sm outline-none">
+            {CATEGORIES.map((c) => <option key={c.id} value={c.id}>{c.icon} {c.label}</option>)}
+          </select>
+          <input placeholder="City/neighborhood for pickup" value={newListing.city} onChange={(e) => setNewListing({ ...newListing, city: e.target.value })}
+            style={{ borderColor: COLORS.line }} className="w-full border rounded-xl px-3 py-2 text-sm outline-none" />
+          <div className="flex gap-2">
+            <input placeholder="Price ($ — 0 for free)" type="number" value={newListing.price} onChange={(e) => setNewListing({ ...newListing, price: e.target.value })}
+              style={{ borderColor: COLORS.line }} className="w-1/2 border rounded-xl px-3 py-2 text-sm outline-none" />
+            <select value={newListing.condition} onChange={(e) => setNewListing({ ...newListing, condition: e.target.value })}
+              style={{ borderColor: COLORS.line }} className="w-1/2 border rounded-xl px-3 py-2 text-sm outline-none">
+              <option>New/unopened</option><option>Gently used</option><option>Good</option><option>Well loved</option>
+            </select>
+          </div>
+          <textarea placeholder="Notes" value={newListing.note} onChange={(e) => setNewListing({ ...newListing, note: e.target.value })}
+            style={{ borderColor: COLORS.line }} className="w-full border rounded-xl px-3 py-2 text-sm outline-none" rows={3} />
+          <button onClick={onSubmit} style={{ background: COLORS.forest }} className="w-full text-white rounded-xl py-2.5 font-medium">Post to marketplace</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function OrganicTab() {
+  const [q, setQ] = useState("");
+  const all = Object.entries(REGISTRY_ITEMS).flatMap(([catId, items]) =>
+    items.filter((i) => i.tags.includes("organic") || i.tags.includes("low-chemical")).map((i) => ({ ...i, catId }))
+  );
+  const filtered = all.filter((i) => i.name.toLowerCase().includes(q.toLowerCase()) || i.site.toLowerCase().includes(q.toLowerCase()));
+  return (
+    <div>
+      <SectionLabel eyebrow="For sensitive skin" title="One list, no endless scrolling" />
+      <div className="relative mb-4">
+        <Search size={16} className="absolute left-3 top-3" style={{ color: COLORS.mauve }} />
+        <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search diapers, clothes, food…"
+          style={{ borderColor: COLORS.line }} className="w-full border rounded-xl pl-9 pr-3 py-2.5 text-sm outline-none" />
+      </div>
+      <div className="space-y-3">
+        {filtered.map((it, i) => {
+          const cat = CATEGORIES.find((c) => c.id === it.catId);
+          return (
+            <a key={i} href={it.url} target="_blank" rel="noopener noreferrer" style={{ background: "#EEF2E9", borderColor: "#CFE0CC" }}
+              className="flex items-center justify-between rounded-xl border p-4 hover:shadow-sm transition">
+              <div>
+                <div className="text-xs mb-1" style={{ color: COLORS.mauve }}>{cat?.icon} {cat?.label}</div>
+                <div className="font-medium text-sm">{it.name}</div>
+                <div className="text-xs mt-1" style={{ color: COLORS.forest }}>{it.site}</div>
+                <div className="flex gap-1 mt-1.5">{it.tags.map((t) => <Tag key={t} tone="green">{t}</Tag>)}</div>
+              </div>
+              <ExternalLink size={16} style={{ color: COLORS.forest }} />
+            </a>
+          );
+        })}
+      </div>
+    </div>
+  );
+      }
+      function HeartTab({ hrInput, setHrInput, addHeartLog, heartLogs }) {
+  return (
+    <div>
+      <div style={{ background: "#FBEEEF", borderColor: "#F0D3D6" }} className="rounded-xl border p-4 mb-5 text-sm">
+        A phone screen or app can't safely or accurately measure a baby's real heartbeat. This tab only logs readings
+        from an actual pulse oximeter or pediatrician visit. For any concern about your baby's heart rate or breathing,
+        contact your pediatrician or emergency services rather than relying on an app.
+      </div>
+      <div style={{ background: COLORS.surface, borderColor: COLORS.line }} className="rounded-2xl border p-5 mb-4">
+        <div className="flex gap-2">
+          <input type="number" placeholder="BPM from your monitor" value={hrInput} onChange={(e) => setHrInput(e.target.value)}
+            style={{ borderColor: COLORS.line }} className="flex-1 border rounded-xl px-3 py-2 text-sm outline-none" />
+          <button onClick={addHeartLog} style={{ background: COLORS.forest }} className="text-white rounded-xl px-4 text-sm font-medium">Log</button>
+        </div>
+      </div>
+      <div className="space-y-2">
+        {heartLogs.length === 0 && <p className="text-sm" style={{ color: COLORS.mauve }}>No readings logged yet.</p>}
+        {heartLogs.map((l, i) => (
+          <div key={i} style={{ background: COLORS.surface, borderColor: COLORS.line }} className="flex justify-between rounded-xl border px-4 py-2.5 text-sm">
+            <span>{l.t}</span><span style={{ fontFamily: "'IBM Plex Mono', monospace", color: COLORS.forest }}>{l.bpm} bpm</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function CareTab({ myLoc, locStatus, useMyLocation }) {
+  const withDistance = CARE_PROVIDERS.map((p) => ({ ...p, distance: myLoc ? haversineMiles(myLoc.lat, myLoc.lng, p.lat, p.lng) : null }))
+    .sort((a, b) => (a.distance ?? 9999) - (b.distance ?? 9999));
+  return (
+    <div>
+      <SectionLabel eyebrow="Directions & phone numbers" title="Pediatricians & children's hospitals" />
+      <div style={{ background: COLORS.surface, borderColor: COLORS.line }} className="rounded-xl border p-4 mb-4">
+        <div className="flex items-center justify-between">
+          <div className="text-sm font-medium flex items-center gap-1.5"><Navigation size={14} style={{ color: COLORS.forest }} /> Sort by distance from me</div>
+          <button onClick={useMyLocation} style={{ color: COLORS.forest }} className="text-xs underline">{myLoc ? "Refresh" : "Share location"}</button>
+        </div>
+        {!myLoc && <p className="text-xs mt-1" style={{ color: COLORS.mauve }}>Without location, results are ordered by rating instead.</p>}
+      </div>
+      <div className="space-y-3">
+        {withDistance.map((p, i) => (
+          <div key={i} style={{ background: COLORS.surface, borderColor: COLORS.line }} className="rounded-xl border p-4">
+            <Tag tone={p.type === "Pediatrician" ? "ochre" : "mauve"}>{p.type}</Tag>
+            <div className="font-medium text-sm mt-1.5">{p.name}</div>
+            <div className="text-xs mt-1 flex items-center gap-1" style={{ color: COLORS.mauve }}><MapPin size={11} />{p.address}</div>
+            <div className="flex items-center gap-3 mt-1.5 text-xs">
+              <span className="flex items-center gap-0.5" style={{ color: COLORS.ochre }}><Star size={12} fill="currentColor" />{p.rating} ({p.ratingCount})</span>
+              {p.distance != null && <span style={{ color: COLORS.forest }}>{p.distance.toFixed(1)} mi away</span>}
+            </div>
+            <div className="flex gap-2 mt-3">
+              <a href={mapsDirectionsUrl(p.address)} target="_blank" rel="noopener noreferrer" style={{ background: COLORS.forest }}
+                className="text-white text-xs px-3 py-1.5 rounded-full flex items-center gap-1"><Navigation size={12} /> Directions</a>
+              <a href={`tel:${p.phone.replace(/\s/g, "")}`} style={{ borderColor: COLORS.forest, color: COLORS.forest }}
+                className="text-xs px-3 py-1.5 rounded-full border flex items-center gap-1"><Phone size={12} /> {p.phone}</a>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function ProfileTab({ profile, onSignOut, myActivity }) {
+  return (
+    <div>
+      <SectionLabel eyebrow="Your account" title={profile.username} />
+      <div style={{ background: COLORS.surface, borderColor: COLORS.line }} className="rounded-2xl border p-5 mb-5">
+        <div className="flex items-center gap-3 mb-3">
+          <div style={{ background: COLORS.forest }} className="w-12 h-12 rounded-full flex items-center justify-center text-white text-lg font-semibold">
+            {profile.username[0]?.toUpperCase()}
+          </div>
+          <div>
+            <div className="font-medium">{profile.username}</div>
+            <div className="text-xs flex items-center gap-1" style={{ color: COLORS.mauve }}>
+              <Clock size={11} /> Member since {new Date(profile.joined_at).toLocaleDateString()}
+            </div>
+          </div>
+        </div>
+        <button onClick={onSignOut} style={{ borderColor: COLORS.line, color: COLORS.mauve }} className="text-sm border rounded-xl px-4 py-2 flex items-center gap-1.5">
+          <LogOut size={14} /> Sign out
+        </button>
+      </div>
+      <SectionLabel eyebrow="Your timeline" title="Registry & marketplace activity" />
+      <div className="space-y-2">
+        {myActivity.length === 0 && <p className="text-sm" style={{ color: COLORS.mauve }}>Nothing logged yet.</p>}
+        {myActivity.map((a) => <ActivityRow key={a.id} a={a} />)}
+      </div>
+    </div>
+  );
+      }
