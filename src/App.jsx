@@ -348,3 +348,38 @@ function RegistryDetail({ categoryId, level, setLevel, onBack, usedListings, onO
     </div>
   );
 }
+function ListingCard({ listing, onRemove, onSold, userId }) {
+  const cat = CATEGORIES.find((c) => c.id === listing.category);
+  const mine = userId === listing.poster_id;
+  return (
+    <div style={{ background: COLORS.surface, borderColor: COLORS.line, opacity: listing.sold ? 0.55 : 1 }} className="rounded-xl border p-4">
+      <div className="flex justify-between items-start">
+        <div className="flex-1">
+          <div className="font-medium text-sm">{listing.title} {listing.sold && <Tag tone="mauve">Sold</Tag>}</div>
+          <div className="text-xs mt-1 flex flex-wrap items-center gap-x-2" style={{ color: COLORS.mauve }}>
+            <span>{cat?.icon} {cat?.label}</span>
+            <span>· posted by {listing.poster_name}</span>
+            {listing.city && <span className="flex items-center gap-0.5"><MapPin size={11} />{listing.city}</span>}
+            {listing.distance != null && <span>· {listing.distance.toFixed(1)} mi away</span>}
+          </div>
+          {listing.note && <div className="text-xs mt-1.5">{listing.note}</div>}
+          <div className="flex gap-1.5 mt-2">
+            <Tag tone="mauve">{listing.condition}</Tag>
+            {listing.price > 0 ? <Tag tone="ochre">${listing.price}</Tag> : <Tag tone="green">Free</Tag>}
+            <Tag tone="green">Local pickup</Tag>
+          </div>
+          {mine && !listing.sold && onSold && (
+            <button onClick={() => onSold(listing)} className="text-xs mt-2 underline" style={{ color: COLORS.forest }}>Mark as sold</button>
+          )}
+        </div>
+        {onRemove && mine && <button onClick={() => onRemove(listing.id)} className="p-1" style={{ color: COLORS.mauve }}><Trash2 size={15} /></button>}
+      </div>
+    </div>
+  );
+}
+
+function MarketTab({ filtered, filter, setFilter, onPost, onRemove, onSold, userId, loaded, radiusMiles, setRadiusMiles, myLoc, locStatus, useMyLocation }) {
+  return (
+    <div>
+      <SectionLabel eyebrow="In-app marketplace" title="Used baby gear, posted by parents here" />
+      <div style={{ background: COLORS.surface, borderColor: COLORS.line }} className="rounded-xl border p-4 mb-4">
