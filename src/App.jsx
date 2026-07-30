@@ -392,3 +392,100 @@ function OrganicTab() {
   return (
     <div>
       <SectionLabel eyebrow="For sensitive skin" title="One list, no endless s
+function OrganicTab() {
+  const [q, setQ] = useState("");
+  const all = Object.entries(REGISTRY_ITEMS).flatMap(([catId, items]) =>
+    items.filter((i) => i.tags.includes("organic") || i.tags.includes("low-chemical")).map((i) => ({ ...i, catId }))
+  );
+  const filtered = all.filter((i) => i.name.toLowerCase().includes(q.toLowerCase()) || i.site.toLowerCase().includes(q.toLowerCase()));
+  return (
+    <div>
+      <SectionLabel eyebrow="For sensitive skin" title="One list, no endless scrolling" />
+      <div className="relative mb-4">
+        <Search size={16} className="absolute left-3 top-3" style={{ color: COLORS.mauve }} />
+        <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Search diapers, clothes, food…"
+          style={{ borderColor: COLORS.line }} className="w-full border rounded-xl pl-9 pr-3 py-2.5 text-sm outline-none" />
+      </div>
+      <div className="space-y-3">
+        {filtered.map((it, i) => {
+          const cat = CATEGORIES.find((c) => c.id === it.catId);
+          return (
+            <a key={i} href={it.url} target="_blank" rel="noopener noreferrer" style={{ background: "#EEF2E9", borderColor: "#CFE0CC" }}
+              className="flex items-center justify-between rounded-xl border p-4 hover:shadow-sm transition">
+              <div>
+                <div className="text-xs mb-1" style={{ color: COLORS.mauve }}>{cat?.icon} {cat?.label}</div>
+                <div className="font-medium text-sm">{it.name}</div>
+                <div className="text-xs mt-1" style={{ color: COLORS.forest }}>{it.site}</div>
+                <div className="flex gap-1 mt-1.5">{it.tags.map((t) => <Tag key={t} tone="green">{t}</Tag>)}</div>
+              </div>
+              <ExternalLink size={16} style={{ color: COLORS.forest }} />
+            </a>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+function HeartTab({ hrInput, setHrInput, addHeartLog, heartLogs }) {
+  return (
+    <div>
+      <div style={{ background: "#FBEEEF", borderColor: "#F0D3D6" }} className="rounded-xl border p-4 mb-5 text-sm">
+        A phone screen or app can't safely or accurately measure a baby's real heartbeat. This tab only logs readings
+        from an actual pulse oximeter or pediatrician visit. For any concern about your baby's heart rate or breathing,
+        contact your pediatrician or emergency services rather than relying on an app.
+      </div>
+      <div style={{ background: COLORS.surface, borderColor: COLORS.line }} className="rounded-2xl border p-5 mb-4">
+        <div className="flex gap-2">
+          <input type="number" placeholder="BPM from your monitor" value={hrInput} onChange={(e) => setHrInput(e.target.value)}
+            style={{ borderColor: COLORS.line }} className="flex-1 border rounded-xl px-3 py-2 text-sm outline-none" />
+          <button onClick={addHeartLog} style={{ background: COLORS.forest }} className="text-white rounded-xl px-4 text-sm font-medium">Log</button>
+        </div>
+      </div>
+      <div className="space-y-2">
+        {heartLogs.length === 0 && <p className="text-sm" style={{ color: COLORS.mauve }}>No readings logged yet.</p>}
+        {heartLogs.map((l, i) => (
+          <div key={i} style={{ background: COLORS.surface, borderColor: COLORS.line }} className="flex justify-between rounded-xl border px-4 py-2.5 text-sm">
+            <span>{l.t}</span><span style={{ fontFamily: "'IBM Plex Mono', monospace", color: COLORS.forest }}>{l.bpm} bpm</span>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function CareTab({ myLoc, locStatus, useMyLocation }) {
+  const withDistance = CARE_PROVIDERS.map((p) => ({ ...p, distance: myLoc ? haversineMiles(myLoc.lat, myLoc.lng, p.lat, p.lng) : null }))
+    .sort((a, b) => (a.distance ?? 9999) - (b.distance ?? 9999));
+  return (
+    <div>
+      <SectionLabel eyebrow="Directions & phone numbers" title="Pediatricians & children's hospitals" />
+      <div style={{ background: COLORS.surface, borderColor: COLORS.line }} className="rounded-xl border p-4 mb-4">
+        <div className="flex items-center justify-between">
+          <div className="text-sm font-medium flex items-center gap-1.5"><Navigation size={14} style={{ color: COLORS.forest }} /> Sort by distance from me</div>
+          <button onClick={useMyLocation} style={{ color: COLORS.forest }} className="text-xs underline">{myLoc ? "Refresh" : "Share location"}</button>
+        </div>
+        {!myLoc && <p className="text-xs mt-1" style={{ color: COLORS.mauve }}>Without location, results are ordered by rating instead.</p>}
+      </div>
+      <div className="space-y-3">
+        {withDistance.map((p, i) => (
+          <div key={i} style={{ background: COLORS.surface, borderColor: COLORS.line }} className="rounded-xl border p-4">
+            <Tag tone={p.type === "Pediatrician" ? "ochre" : "mauve"}>{p.type}</Tag>
+            <div className="font-medium text-sm mt-1.5">{p.name}</div>
+            <div className="text-xs mt-1 flex items-center gap-1" style={{ color: COLORS.mauve }}><MapPin size={11} />{p.address}</div>
+            <div className="flex items-center gap-3 mt-1.5 text-xs">
+              <span className="flex items-center gap-0.5" style={{ color: COLORS.ochre }}><Star size={12} fill="currentColor" />{p.rating} ({p.ratingCount})</span>
+              {p.distance != null && <span style={{ color: COLORS.forest }}>{p.distance.toFixed(1)} mi away</span>}
+            </div>
+            <div className="flex gap-2 mt-3">
+              <a href={mapsDirectionsUrl(p.address)} target="_blank" rel="noopener noreferrer" style={{ background: COLORS.forest }}
+                className="text-white text-xs px-3 py-1.5 rounded-full flex items-center gap-1"><Navigation size={12} /> Directions</a>
+              <a href={`tel:${p.phone.replace(/\s/g, "")}`} style={{ borderColor: COLORS.forest, color: COLORS.forest }}
+                className="text-xs px-3 py-1.5 rounded-full border flex items-center gap-1"><Phone size={12} /> {p.phone}</a>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+                    }
